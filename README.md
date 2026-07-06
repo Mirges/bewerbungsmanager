@@ -1,4 +1,4 @@
-﻿# JobApplicationTracker
+﻿# Bewerbungsmanager
 
 Eine kleine Desktop App um Jobbewerbungen zu verwalten.
 
