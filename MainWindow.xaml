@@ -3,9 +3,35 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:JobApplicationTracker"
         mc:Ignorable="d"
-        Title="MainWindow" Height="800" Width="1200">
+        Title="MainWindow" Height="1000" Width="1400"
+        WindowStartupLocation="CenterScreen"
+        KeyDown="Window_KeyDown">
+
+    <Window.Resources>
+        <Style x:Key="StatusRowStyle" TargetType="DataGridRow">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Status}" Value="Beworben">
+                    <Setter Property="Background" Value="#FFF9C4"/>
+                </DataTrigger>
+
+                <DataTrigger Binding="{Binding Status}" Value="Erhalt bestätigt">
+                    <Setter Property="Background" Value="#BBDEFB"/>
+                </DataTrigger>
+
+                <DataTrigger Binding="{Binding Status}" Value="Abgelehnt">
+                    <Setter Property="Background" Value="#FFCDD2"/>
+                </DataTrigger>
+
+                <DataTrigger Binding="{Binding Status}" Value="Eingeladen">
+                    <Setter Property="Background" Value="#C8E6C9"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="320"/>
@@ -28,36 +54,117 @@
             <TextBlock Text="E-Mail"/>
             <TextBox x:Name="ContactEmailTextBox" Margin="0,0,0,10"/>
 
+            <TextBlock Text="Bewerbungsdatum"/>
+            <DatePicker x:Name="ApplicationDatePicker"
+                    Margin="0,0,0,10"
+                    SelectedDate="{x:Static sys:DateTime.Today}"/>
+
             <TextBlock Text="Status"/>
             <ComboBox x:Name="StatusComboBox" Margin="0,0,0,10" SelectedIndex="0">
                 <ComboBoxItem Content="Beworben"/>
                 <ComboBoxItem Content="Erhalt bestätigt"/>
                 <ComboBoxItem Content="Abgelehnt"/>
-                <ComboBoxItem Content="Akzeptiert"/>
+                <ComboBoxItem Content="Eingeladen"/>
             </ComboBox>
 
             <TextBlock Text="Notizen"/>
             <TextBox x:Name="NotesTextBox" Height="100" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,20"/>
 
-            <Button Content="Bewerbung hinzufügen" Height="35" Click="AddApplicationButton_Click"/>
+            <Button Content="Bewerbung hinzufügen" 
+                    Height="35" 
+                    Click="AddApplicationButton_Click"/>
 
             <Button Content="Ausgewählte Bewerbung löschen"
-                Height="35"
-                Margin="0,10,0,0"
-                Click="DeleteApplicationButton_Click"/>
+                    Height="35"
+                    Margin="0,10,0,0"
+                    Click="DeleteApplicationButton_Click"/>
+
+            <Button Content="Ausgewählte Bewerbung aktualisieren"
+                    Height="35"
+                    Margin="0,10,0,0"
+                    Click="UpdateApplicationButton_Click"/>
+            
+            <Button Content="Auswahl aufheben (ESC)"
+                    Height="35"
+                    Margin="0,10,0,0"
+                    Click="ClearFormButton_Click"/>
+
+            <Border Margin="0,20,0,0"
+        Padding="10"
+        BorderBrush="LightGray"
+        BorderThickness="1"
+        CornerRadius="5">
+                <StackPanel>
+                    <TextBlock Text="Status-Legende"
+                   FontWeight="Bold"
+                   Margin="0,0,0,8"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <Rectangle Width="18" Height="18" Fill="#FFF9C4" Stroke="Gray" Margin="0,0,8,0"/>
+                        <TextBlock Text="Beworben"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <Rectangle Width="18" Height="18" Fill="#BBDEFB" Stroke="Gray" Margin="0,0,8,0"/>
+                        <TextBlock Text="Erhalt bestätigt"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <Rectangle Width="18" Height="18" Fill="#FFCDD2" Stroke="Gray" Margin="0,0,8,0"/>
+                        <TextBlock Text="Abgelehnt"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Rectangle Width="18" Height="18" Fill="#C8E6C9" Stroke="Gray" Margin="0,0,8,0"/>
+                        <TextBlock Text="Eingeladen"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
         </StackPanel>
 
         <DataGrid x:Name="ApplicationsDataGrid"
           Grid.Column="2"
           AutoGenerateColumns="False"
-          IsReadOnly="True">
+          IsReadOnly="True"
+          SelectionChanged="ApplicationsDataGrid_SelectionChanged"
+          HorizontalScrollBarVisibility="Auto"
+          CanUserResizeColumns="True"
+          RowStyle="{StaticResource StatusRowStyle}">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Unternehmen" Binding="{Binding CompanyName}" Width="*"/>
-                <DataGridTextColumn Header="Position" Binding="{Binding PositionTitle}" Width="*"/>
-                <DataGridTextColumn Header="Kontaktperson" Binding="{Binding ContactPerson}" Width="150"/>
-                <DataGridTextColumn Header="E-Mail" Binding="{Binding ContactEmail}" Width="180"/>
-                <DataGridTextColumn Header="Datum" Binding="{Binding ApplicationDate, StringFormat=d}" Width="100"/>
-                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="130"/>
+                <DataGridTextColumn Header="Unternehmen"
+                        Binding="{Binding CompanyName}"
+                        Width="SizeToCells"
+                        MinWidth="120"/>
+
+                <DataGridTextColumn Header="Position"
+                        Binding="{Binding PositionTitle}"
+                        Width="SizeToCells"
+                        MinWidth="140"/>
+
+                <DataGridTextColumn Header="Kontaktperson"
+                        Binding="{Binding ContactPerson}"
+                        Width="SizeToHeader"
+                        MinWidth="120"/>
+
+                <DataGridTextColumn Header="E-Mail"
+                        Binding="{Binding ContactEmail}"
+                        Width="SizeToCells"
+                        MinWidth="160"/>
+
+                <DataGridTextColumn Header="Datum"
+                        Binding="{Binding ApplicationDate, StringFormat={}{0:dd.MM.yyyy}}"
+                        Width="SizeToHeader"
+                        MinWidth="100"/>
+
+                <DataGridTextColumn Header="Status"
+                        Binding="{Binding Status}"
+                        Width="SizeToCells"
+                        MinWidth="120"/>
+
+                <DataGridTextColumn Header="Notizen"
+                        Binding="{Binding Notes}"
+                        Width="*"
+                        MinWidth="200"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

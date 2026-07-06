@@ -7,12 +7,16 @@ Sie wurde als Portfolio-Projekt entwickelt, um C#, WPF, SQLite und Entity Framew
 
 ## Features
 
-- Jobbewerbungen hinzufügen
+- Bewerbungen hinzufügen
 - Bewerbungen lokal mit SQLite speichern
-- Bewerbungen in einer Tabelle anzeigen
-- Unternehmen, Position, Ansprechpartner, E-Mail, Status und Notizen verfolgen
+- Bewerbungen beim Start automatisch laden
+- Ausgewählte Bewerbungen bearbeiten
+- Ausgewählte Bewerbungen löschen
+- Status farblich im DataGrid darstellen
+- Status-Legende anzeigen
+- Formular per Button oder Escape-Taste zurücksetzen
+- Deutsches Datumsformat
 - Grundlegende Eingabevalidierung
-- Bewerbungen löschen
 
 ## Technologien
 
@@ -25,12 +29,10 @@ Sie wurde als Portfolio-Projekt entwickelt, um C#, WPF, SQLite und Entity Framew
 
 ## Geplante Funktionen
 
-
-- Bewerbungen bearbeiten
 - Bewerbungen suchen und filtern
 - Exportieren nach Excel oder CSV
 - Statistik-Dashboard
 
 ## Projektstatus
 
-Version 0.2 - Grundlegendes Bewerbungsmanagement mit lokaler Datenbankspeicherung.
+Version 0.3 - Grundlegendes Bewerbungsmanagement mit lokaler Datenbankspeicherung.
