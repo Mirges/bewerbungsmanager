@@ -32,4 +32,4 @@ Sie wurde als Portfolio-Projekt entwickelt, um C#, WPF, SQLite und Entity Framew
 
 ## Projektstatus
 
-Version 0.1 - Grundlegendes Bewerbungsmanagement mit lokaler Datenbankspeicherung.
+Version 0.2 - Grundlegendes Bewerbungsmanagement mit lokaler Datenbankspeicherung.
