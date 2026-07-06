@@ -81,6 +81,52 @@ namespace JobApplicationTracker
             ClearForm();
         }
 
+        private void DeleteApplicationButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ApplicationsDataGrid.SelectedItem is not JobApplication selectedApplication)
+            {
+                MessageBox.Show(
+                    "Bitte zuerst eine Bewerbung in der Tabelle auswählen.",
+                    "Keine Bewerbung ausgewählt",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                return;
+            }
+
+            var result = MessageBox.Show(
+                $"Möchtest du die Bewerbung bei '{selectedApplication.CompanyName}' wirklich löschen?",
+                "Bewerbung löschen",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            using var db = new ApplicationDbContext();
+
+            var applicationFromDatabase = db.JobApplications
+                .FirstOrDefault(application => application.Id == selectedApplication.Id);
+
+            if (applicationFromDatabase is null)
+            {
+                MessageBox.Show(
+                    "Die Bewerbung wurde in der Datenbank nicht gefunden.",
+                    "Fehler",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+                return;
+            }
+
+            db.JobApplications.Remove(applicationFromDatabase);
+            db.SaveChanges();
+
+            _applications.Remove(selectedApplication);
+        }
+
         private void ClearForm()
         {
             CompanyTextBox.Clear();

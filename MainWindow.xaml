@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JobApplicationTracker"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="1200">
+        Title="MainWindow" Height="800" Width="1200">
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="320"/>
@@ -40,6 +40,11 @@
             <TextBox x:Name="NotesTextBox" Height="100" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,20"/>
 
             <Button Content="Bewerbung hinzufügen" Height="35" Click="AddApplicationButton_Click"/>
+
+            <Button Content="Ausgewählte Bewerbung löschen"
+                Height="35"
+                Margin="0,10,0,0"
+                Click="DeleteApplicationButton_Click"/>
         </StackPanel>
 
         <DataGrid x:Name="ApplicationsDataGrid"

@@ -12,6 +12,7 @@ Sie wurde als Portfolio-Projekt entwickelt, um C#, WPF, SQLite und Entity Framew
 - Bewerbungen in einer Tabelle anzeigen
 - Unternehmen, Position, Ansprechpartner, E-Mail, Status und Notizen verfolgen
 - Grundlegende Eingabevalidierung
+- Bewerbungen löschen
 
 ## Technologien
 
@@ -24,7 +25,7 @@ Sie wurde als Portfolio-Projekt entwickelt, um C#, WPF, SQLite und Entity Framew
 
 ## Geplante Funktionen
 
-- Bewerbungen löschen
+
 - Bewerbungen bearbeiten
 - Bewerbungen suchen und filtern
 - Exportieren nach Excel oder CSV
