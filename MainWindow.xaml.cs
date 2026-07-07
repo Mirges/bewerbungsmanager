@@ -8,15 +8,21 @@ using Microsoft.Win32;
 using System.IO;
 using System.Text;
 using JobApplicationTracker.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
 
 namespace JobApplicationTracker
 {
     public partial class MainWindow : Window
     {
-        private readonly ObservableCollection<JobApplication> _applications = new();
-        private readonly JobApplicationService _jobApplicationService = new();
+private readonly ObservableCollection<JobApplication> _applications = new();
+private readonly JobApplicationService _jobApplicationService = new();
+private readonly AttachmentService _attachmentService = new();
 
-        private JobApplication? _selectedApplication;
+private JobApplication? _selectedApplication;
+
+private string _currentAttachmentPath = string.Empty;
+private string _selectedAttachmentSourcePath = string.Empty;
 
         public MainWindow()
         {
@@ -37,14 +43,32 @@ namespace JobApplicationTracker
             {
                 db.Database.EnsureCreated();
 
-                // Testet, ob die Tabelle wirklich existiert.
+                try
+                {
+                    db.Database.ExecuteSqlRaw(
+                        "ALTER TABLE JobApplications ADD COLUMN AttachmentPath TEXT NOT NULL DEFAULT ''");
+                }
+                catch
+                {
+                    // Spalte existiert bereits.
+                }
+
                 db.JobApplications.Any();
             }
             catch
             {
-                // Falls die Datenbankdatei existiert, aber kaputt/unvollständig ist:
                 db.Database.EnsureDeleted();
                 db.Database.EnsureCreated();
+
+                try
+                {
+                    db.Database.ExecuteSqlRaw(
+                        "ALTER TABLE JobApplications ADD COLUMN AttachmentPath TEXT NOT NULL DEFAULT ''");
+                }
+                catch
+                {
+                    // Falls die Spalte bereits durch EnsureCreated angelegt wurde.
+                }
             }
         }
 
@@ -105,6 +129,8 @@ namespace JobApplicationTracker
                 selectedStatus = status;
             }
 
+            string attachmentPath = GetAttachmentPathForSaving(companyName, positionTitle);
+
             var application = new JobApplication
             {
                 CompanyName = companyName,
@@ -113,6 +139,7 @@ namespace JobApplicationTracker
                 ContactEmail = ContactEmailTextBox.Text.Trim(),
                 ApplicationDate = ApplicationDatePicker.SelectedDate ?? DateTime.Today,
                 Status = selectedStatus,
+                AttachmentPath = attachmentPath,
                 Notes = NotesTextBox.Text.Trim()
             };
 
@@ -154,6 +181,7 @@ namespace JobApplicationTracker
             try
             {
                 _jobApplicationService.DeleteApplication(selectedApplication.Id);
+                _attachmentService.DeleteAttachmentIfExists(selectedApplication.AttachmentPath);
 
                 ApplyFilters();
                 ResetFormSelection();
@@ -204,6 +232,8 @@ namespace JobApplicationTracker
                 selectedStatus = status;
             }
 
+            string attachmentPath = GetAttachmentPathForSaving(companyName, positionTitle);
+
             var updatedApplication = new JobApplication
             {
                 Id = _selectedApplication.Id,
@@ -213,7 +243,8 @@ namespace JobApplicationTracker
                 ContactEmail = ContactEmailTextBox.Text.Trim(),
                 ApplicationDate = ApplicationDatePicker.SelectedDate ?? DateTime.Today,
                 Status = selectedStatus,
-                Notes = NotesTextBox.Text.Trim()
+                Notes = NotesTextBox.Text.Trim(),
+                AttachmentPath = attachmentPath
             };
 
             try
@@ -248,6 +279,9 @@ namespace JobApplicationTracker
             ContactEmailTextBox.Text = selectedApplication.ContactEmail;
             ApplicationDatePicker.SelectedDate = selectedApplication.ApplicationDate;
             NotesTextBox.Text = selectedApplication.Notes;
+            _currentAttachmentPath = selectedApplication.AttachmentPath;
+            _selectedAttachmentSourcePath = string.Empty;
+            AttachmentFileTextBlock.Text = _attachmentService.GetAttachmentFileName(_currentAttachmentPath);
 
             foreach (ComboBoxItem item in StatusComboBox.Items)
             {
@@ -378,13 +412,72 @@ namespace JobApplicationTracker
             int appliedCount = allApplications.Count(application => application.Status == "Beworben");
             int confirmedCount = allApplications.Count(application => application.Status == "Erhalt bestätigt");
             int rejectedCount = allApplications.Count(application => application.Status == "Abgelehnt");
-            int acceptedCount = allApplications.Count(application => application.Status == "Akzeptiert");
+            int acceptedCount = allApplications.Count(application => application.Status == "Zusage");
 
             TotalCountTextBlock.Text = $"Gesamt: {totalCount}";
             AppliedCountTextBlock.Text = $"Beworben: {appliedCount}";
             ConfirmedCountTextBlock.Text = $"Erhalt bestätigt: {confirmedCount}";
             RejectedCountTextBlock.Text = $"Abgelehnt: {rejectedCount}";
-            AcceptedCountTextBlock.Text = $"Akzeptiert: {acceptedCount}";
+            AcceptedCountTextBlock.Text = $"Zusage: {acceptedCount}";
+        }
+
+        private void SelectPdfButton_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Title = "PDF-Stellenausschreibung auswählen",
+                Filter = "PDF-Dateien (*.pdf)|*.pdf"
+            };
+
+            bool? result = openFileDialog.ShowDialog();
+
+            if (result != true)
+            {
+                return;
+            }
+
+            _selectedAttachmentSourcePath = openFileDialog.FileName;
+            AttachmentFileTextBlock.Text = Path.GetFileName(_selectedAttachmentSourcePath);
+        }
+
+        private void OpenPdfButton_Click(object sender, RoutedEventArgs e)
+        {
+            string attachmentPath = !string.IsNullOrWhiteSpace(_selectedAttachmentSourcePath)
+                ? _selectedAttachmentSourcePath
+                : _currentAttachmentPath;
+
+            try
+            {
+                _attachmentService.OpenAttachment(attachmentPath);
+            }
+            catch
+            {
+                MessageBox.Show(
+                    "Es wurde keine gültige PDF-Datei gefunden.",
+                    "PDF nicht gefunden",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+        }
+
+        private string GetAttachmentPathForSaving(string companyName, string positionTitle)
+        {
+            if (string.IsNullOrWhiteSpace(_selectedAttachmentSourcePath))
+            {
+                return _currentAttachmentPath;
+            }
+
+            return _attachmentService.CopyPdfToAttachmentFolder(
+                _selectedAttachmentSourcePath,
+                companyName,
+                positionTitle);
+        }
+
+        private void RemovePdfButton_Click(object sender, RoutedEventArgs e)
+        {
+            _currentAttachmentPath = string.Empty;
+            _selectedAttachmentSourcePath = string.Empty;
+            AttachmentFileTextBlock.Text = "Kein Anhang ausgewählt";
         }
 
         private void ResetFormSelection()
@@ -403,6 +496,10 @@ namespace JobApplicationTracker
             ApplicationDatePicker.SelectedDate = DateTime.Today;
             NotesTextBox.Clear();
             StatusComboBox.SelectedIndex = 0;
+
+            _currentAttachmentPath = string.Empty;
+            _selectedAttachmentSourcePath = string.Empty;
+            AttachmentFileTextBlock.Text = "Kein Anhang ausgewählt";
         }
     }
 }

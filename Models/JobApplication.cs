@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.IO;
 
 namespace JobApplicationTracker.Models
 {
@@ -23,5 +20,18 @@ namespace JobApplicationTracker.Models
         public string Status { get; set; } = "Beworben";
 
         public string Notes { get; set; } = string.Empty;
+
+        public string AttachmentPath { get; set; } = string.Empty;
+
+        [NotMapped]
+        public string AttachmentDisplay
+        {
+            get
+            {
+                return string.IsNullOrWhiteSpace(AttachmentPath)
+                    ? "-"
+                    : Path.GetFileName(AttachmentPath);
+            }
+        }
     }
 }

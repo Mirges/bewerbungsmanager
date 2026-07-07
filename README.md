@@ -29,6 +29,9 @@ Sie wurde als Portfolio-Projekt entwickelt, um C#, WPF, SQLite und Entity Framew
 - Deutsches Datumsformat
 - Automatisch zentriertes Programmfenster
 - Grundlegende Eingabevalidierung
+- PDF-Stellenausschreibungen an Bewerbungen anhängen
+- PDF-Anhänge im lokalen AppData-Ordner speichern
+- PDF-Anhänge direkt aus der Anwendung öffnen
 
 ## Technologien
 
@@ -63,6 +66,7 @@ Die Datenbankdatei wird nicht ins GitHub-Repository übernommen.
     ├── Models/
     │   └── JobApplication.cs
     ├── Services/
+        ├── AttachmentService.cs
     │   └── JobApplicationService.cs
     ├── docs/
     │   └── screenshots/
@@ -80,4 +84,4 @@ Die Datenbankdatei wird nicht ins GitHub-Repository übernommen.
 
 ## Projektstatus
 
-Version 0.5 - Bewerbungsmanagement mit lokaler SQLite-Datenbank, Bearbeiten/Löschen-Funktion, Suche, Statusfilter, CSV-Export, Dashboard, farblicher Statusanzeige und Tastenkürzeln.
+Version 0.6 - Bewerbungsmanagement mit lokaler SQLite-Datenbank, Bearbeiten/Löschen-Funktion, Suche, Statusfilter, CSV-Export, Dashboard, PDF-Anhängen, farblicher Statusanzeige und Tastenkürzeln.

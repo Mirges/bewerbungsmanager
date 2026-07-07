@@ -1,5 +1,6 @@
 ﻿using JobApplicationTracker.Data;
 using JobApplicationTracker.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace JobApplicationTracker.Services
 {
@@ -8,7 +9,7 @@ namespace JobApplicationTracker.Services
         public List<JobApplication> GetApplications(string searchText, string selectedStatus)
         {
             using var db = new ApplicationDbContext();
-            db.Database.EnsureCreated();
+            EnsureDatabaseIsReady(db);
 
             var query = db.JobApplications.AsQueryable();
 
@@ -34,10 +35,18 @@ namespace JobApplicationTracker.Services
                 .ToList();
         }
 
+        public List<JobApplication> GetAllApplications()
+        {
+            using var db = new ApplicationDbContext();
+            EnsureDatabaseIsReady(db);
+
+            return db.JobApplications.ToList();
+        }
+
         public void AddApplication(JobApplication application)
         {
             using var db = new ApplicationDbContext();
-            db.Database.EnsureCreated();
+            EnsureDatabaseIsReady(db);
 
             db.JobApplications.Add(application);
             db.SaveChanges();
@@ -46,7 +55,7 @@ namespace JobApplicationTracker.Services
         public void UpdateApplication(JobApplication updatedApplication)
         {
             using var db = new ApplicationDbContext();
-            db.Database.EnsureCreated();
+            EnsureDatabaseIsReady(db);
 
             var applicationFromDatabase = db.JobApplications
                 .FirstOrDefault(application => application.Id == updatedApplication.Id);
@@ -63,6 +72,7 @@ namespace JobApplicationTracker.Services
             applicationFromDatabase.ApplicationDate = updatedApplication.ApplicationDate;
             applicationFromDatabase.Status = updatedApplication.Status;
             applicationFromDatabase.Notes = updatedApplication.Notes;
+            applicationFromDatabase.AttachmentPath = updatedApplication.AttachmentPath;
 
             db.SaveChanges();
         }
@@ -70,7 +80,7 @@ namespace JobApplicationTracker.Services
         public void DeleteApplication(int applicationId)
         {
             using var db = new ApplicationDbContext();
-            db.Database.EnsureCreated();
+            EnsureDatabaseIsReady(db);
 
             var applicationFromDatabase = db.JobApplications
                 .FirstOrDefault(application => application.Id == applicationId);
@@ -83,12 +93,20 @@ namespace JobApplicationTracker.Services
             db.JobApplications.Remove(applicationFromDatabase);
             db.SaveChanges();
         }
-        public List<JobApplication> GetAllApplications()
+
+        private static void EnsureDatabaseIsReady(ApplicationDbContext db)
         {
-            using var db = new ApplicationDbContext();
             db.Database.EnsureCreated();
 
-            return db.JobApplications.ToList();
+            try
+            {
+                db.Database.ExecuteSqlRaw(
+                    "ALTER TABLE JobApplications ADD COLUMN AttachmentPath TEXT NOT NULL DEFAULT ''");
+            }
+            catch
+            {
+                // Die Spalte existiert bereits.
+            }
         }
     }
 }
